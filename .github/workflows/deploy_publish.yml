@@ -55,7 +55,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: package/docker/Dockerfile
           push: true
-          tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments:latest1-1-1
+          tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments-1-1-1:latest
       - name: Helm - Update Version and Image Tag
         run: |
           yq --inplace '.image.tag = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/values.yaml
