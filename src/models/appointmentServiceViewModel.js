@@ -55,23 +55,6 @@ Bahmni.Appointments.AppointmentServiceViewModel = (function () {
             });
         };
 
-        var parseNonVoidedAttributes = function (attributes) {
-            if (!attributes || !attributes.length) {
-                return [];
-            }
-            return attributes.filter(function (attr) {
-                return !attr.voided;
-            }).map(function (attr) {
-                return {
-                    uuid: attr.uuid,
-                    attributeTypeUuid: attr.attributeTypeUuid,
-                    attributeType: attr.attributeType,
-                    value: attr.value,
-                    voided: attr.voided || false
-                };
-            });
-        };
-
         var service = new Service({
             name: serviceDetails.name,
             uuid: serviceDetails.uuid,
@@ -85,8 +68,7 @@ Bahmni.Appointments.AppointmentServiceViewModel = (function () {
             specialityUuid: serviceDetails.speciality ? serviceDetails.speciality.uuid : undefined,
             locationUuid: serviceDetails.location ? serviceDetails.location.uuid : undefined,
             weeklyAvailability: parseAvailability(serviceDetails.weeklyAvailability) || [],
-            serviceTypes: serviceDetails.serviceTypes || [],
-            attributes: parseNonVoidedAttributes(serviceDetails.attributes)
+            serviceTypes: serviceDetails.serviceTypes || []
         });
         return service;
     };

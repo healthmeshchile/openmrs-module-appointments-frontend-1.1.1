@@ -7,12 +7,6 @@ export const isSpecialitiesEnabled = appConfig => {
     return false;
 };
 
-export const isAppointmentReasonEnabled = appConfig =>
-    appConfig && appConfig.enableAppointmentReasons ?  appConfig.enableAppointmentReasons : false;
-
-export const getAppointmentReasonConceptSet = appConfig =>
-    appConfig && appConfig.appointmentReasonConceptSet ? appConfig.appointmentReasonConceptSet : '';
-
 export const getDefaultOccurrences = appConfig => {
     if (appConfig && appConfig.recurrence)
         return Number(appConfig.recurrence.defaultNumberOfOccurrences);

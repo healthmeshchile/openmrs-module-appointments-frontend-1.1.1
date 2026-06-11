@@ -1,7 +1,7 @@
 'use strict';
 
 describe('AppointmentCommonService', function () {
-    var appointmentCommonService, $rootScope;
+    var appointmentCommonService;
     const mockState = { params: { filterParams: {} } };
     const mockLocation = jasmine.createSpyObj('$location', ['search']);
     
@@ -14,9 +14,8 @@ describe('AppointmentCommonService', function () {
         $provide.value('$state', mockState);
     }));
 
-    beforeEach(inject(['appointmentCommonService', '$rootScope', function (appointmentCommonServiceInjected, $rootScopeInjected) {
+    beforeEach(inject(['appointmentCommonService', function (appointmentCommonServiceInjected) {
         appointmentCommonService = appointmentCommonServiceInjected;
-        $rootScope = $rootScopeInjected;
     }]));
 
     describe('isCurrentUserHavingPrivilege', function () {
@@ -138,42 +137,5 @@ describe('AppointmentCommonService', function () {
             expect(mockState.params.filterParams.providerUuids[0]).toBe('existing-provider');
         });
     });
-
-    describe('hasPrivilege', function () {
-        it('should return true if current user has manageServices privilege', function () {
-            $rootScope.currentUser = {
-            privileges: [
-                { name: 'app:appointments:manageServices' },
-            ]
-        };
-            expect(appointmentCommonService.hasPrivilege('app:appointments:manageServices')).toBe(true);
-        });
-
-        it('should return true if current user has manageServiceAvailability privilege', function () {
-            $rootScope.currentUser = {
-                privileges: [
-                    { name: 'app:appointments:manageServiceAvailability' },
-                ]
-            };
-            expect(appointmentCommonService.hasPrivilege('app:appointments:manageServiceAvailability')).toBe(true);
-        });
-
-        it('should return false if current user does not have manageServices privilege', function () {
-            $rootScope.currentUser = {
-                privileges: [
-                    { name: 'app:appointments:manageServiceAvailability' },
-                ]
-            };
-            expect(appointmentCommonService.hasPrivilege('app:appointments:manageServices')).toBe(false);
-        });
-
-        it('should return false if current user does not have manageServiceAvailability privilege', function () {
-            $rootScope.currentUser = {
-                privileges: [
-                    { name: 'app:appointments:manageServices' },
-                ]
-            };
-            expect(appointmentCommonService.hasPrivilege('app:appointments:manageServiceAvailability')).toBe(false);
-        });
-    });
 });
+

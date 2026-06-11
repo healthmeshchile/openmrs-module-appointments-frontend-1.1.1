@@ -91,7 +91,6 @@
       "homeUrl": "../../bahmni/home",
       "createServiceUrl": "/openmrs/ws/rest/v1/appointmentService",
       "getServiceLoad": "/openmrs/ws/rest/v1/appointmentService/load",
-      "appointmentServiceAttributeTypesUrl": "/openmrs/ws/rest/v1/appointment-service-attribute-types",
       "getAllSpecialitiesUrl": "/openmrs/ws/rest/v1/speciality/all",
       "createAppointmentUrl": "/openmrs/ws/rest/v1/appointment",
       "getAppointmentsForServiceTypeUrl": "/openmrs/ws/rest/v1/appointment/futureAppointmentsForServiceType/",
@@ -119,8 +118,6 @@
       "privilegeForAdmin": "app:appointments:adminTab",
       "privilegeOwnAppointments": "Manage Own Appointments",
       "privilegeResetAppointmentStatus": "Reset Appointment Status",
-      "privilegeManageServices": "app:appointments:manageServices",
-      "privilegeManageServiceAvailability": "app:appointments:manageServiceAvailability",
       "availableForAppointments": "Available for appointments",
       "weekDays": {
         "Monday": 1,

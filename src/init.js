@@ -83,7 +83,6 @@ require("./directives/weekCalendar.js");
 require("./directives/weekdaySelector.js");
 require("./directives/serviceAvailability.js");
 require("./directives/serviceTypes.js");
-require("./directives/serviceAttributes.js");
 require("./directives/colorPicker.js");
 require("./directives/datePicker.js");
 require("./directives/weekPicker.js");

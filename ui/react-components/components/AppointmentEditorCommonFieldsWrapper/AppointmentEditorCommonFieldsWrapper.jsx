@@ -1,6 +1,6 @@
 import React, {Fragment} from "react";
 import classNames from "classnames";
-import {commonFields, tableWrapper, noSpeciality} from "./AppointmentEditorCommonFieldsWrapper.module.scss";
+import {commonFields, tableWrapper} from "./AppointmentEditorCommonFieldsWrapper.module.scss";
 import PatientSearch from "../PatientSearch/PatientSearch.jsx";
 import ErrorMessage from "../ErrorMessage/ErrorMessage.jsx";
 import ServiceSearch from "../Service/ServiceSearch.jsx";
@@ -33,14 +33,13 @@ const AppointmentEditorCommonFieldsWrapper = props => {
     const errorTranslations = getErrorTranslations(intl);
 
     const updateLocationBasedOnService = (selectedService) => {
-        if (selectedService && !isEmpty(selectedService.value.location)) {
-            updateAppointmentDetails({
+        selectedService && isEmpty(selectedService.value.location) ? updateAppointmentDetails({location: null})
+            : updateAppointmentDetails({
                 location: {
                     value: selectedService.value.location,
                     label: selectedService.value.location.name
                 }
             });
-        }
     };
 
     const addOrUpdateProvider = selectedProvider => {
@@ -101,7 +100,7 @@ const AppointmentEditorCommonFieldsWrapper = props => {
                         </td>
                         <td/>
                     </tr>}
-                    <tr className={!isSpecialitiesEnabled(appConfig) ? classNames(noSpeciality) : ''}>
+                    <tr>
                         <td>
                             {isSpecialitiesEnabled(appConfig) ?
                                 <div data-testid="speciality-search">

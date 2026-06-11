@@ -46,7 +46,7 @@ import {
     APPOINTMENT_STATUSES
 } from "../../constants";
 import moment from "moment";
-import {getDefaultOccurrences, getDuration, isAppointmentReasonEnabled} from "../../helper.js";
+import {getDefaultOccurrences, getDuration} from "../../helper.js";
 import {getSelectedWeekDays, getWeekDays} from "../../services/WeekDaysService/WeekDaysService";
 import ButtonGroup from "../ButtonGroup/ButtonGroup.jsx";
 import {getErrorTranslations} from "../../utils/ErrorTranslationsUtil";
@@ -58,10 +58,8 @@ import updateAppointmentStatusAndProviderResponse from "../../appointment-reques
 import * as patientApi from "../../api/patientApi";
 import {mapOpenMRSPatient} from "../../mapper/patientMapper";
 import DatePickerCarbon from "../DatePickerCarbon/DatePickerCarbon.jsx";
-import AppointmentReasonSearch from "../AppointmentReason/AppointmentReasonSearch.jsx";
-import {getConceptByUuid} from "../../api/conceptApi";
-import {Close24} from '@carbon/icons-react';
-import {ContentSwitcher, Switch, RadioButtonGroup, RadioButton} from 'carbon-components-react';
+import { Close24 } from '@carbon/icons-react';
+import { ContentSwitcher, Switch, RadioButtonGroup, RadioButton } from 'carbon-components-react';
 import '../../carbon-conflict-fixes.scss';
 import '../../carbon-theme.scss';
 import './AddAppointment.module.scss';
@@ -71,7 +69,6 @@ import {isAppointmentPriorityOptionEnabled, isAppointmentStatusOptionEnabled} fr
 import NumberInput from "../NumberInput/NumberInputCarbon.jsx";
 import Title from "../Title/Title.jsx";
 import Notification from "../Notifications/Notifications.jsx";
-import {currentLocation} from "../../utils/CookieUtil";
 
 const AddAppointment = props => {
 
@@ -102,8 +99,7 @@ const AddAppointment = props => {
         weekDays: undefined,
         selectedRecurringStartDate: appointmentParams && moment(new Date(appointmentParams.startDateTime)),
         priority: undefined,
-        status: undefined,
-        appointmentReasons: []
+        status: undefined
     };
 
     const initialErrorsState = {
@@ -202,20 +198,6 @@ const AddAppointment = props => {
         if(urlParams && urlParams.patient) {
             populatePatientDetails(urlParams.patient).then();
         }
-        if (urlParams && urlParams.appointmentReason) {
-            populateAppointmentReasonDetails(urlParams.appointmentReason).then();
-        }
-
-        const userLocation = currentLocation();
-        if (userLocation && !appointmentDetails.location) {
-            updateAppointmentDetails({
-                location: {
-                    value: userLocation,
-                    label: userLocation.name
-                }
-            });
-        }
-
         setAppointmentTouched("ready");
     }, [appConfig]);
 
@@ -224,37 +206,6 @@ const AddAppointment = props => {
         const patientForDropdown = mapOpenMRSPatient(patient);
         return updateAppointmentDetails({patient: patientForDropdown});
     }
-
-    async function populateAppointmentReasonDetails(conceptUuids) {
-        try {
-            const uuidList = Array.isArray(conceptUuids) ?  conceptUuids : conceptUuids.split(',');
-            const conceptUuidList = uuidList.map(uuid => uuid.trim());
-
-            const conceptPromises = conceptUuidList.map(uuid => getConceptByUuid(uuid));
-            const concepts = await Promise.all(conceptPromises);
-            
-            const reasonsForDropdown = concepts.map(concept => ({
-                value: concept.uuid,
-                label: concept.display
-            }));
-            
-            return updateAppointmentDetails({appointmentReasons: reasonsForDropdown});
-        } catch (error) {
-            console.error('Error fetching appointment reasons:', error);
-        }
-    }
-
-    const addAppointmentReason = (selectedReason) => {
-        updateAppointmentDetails({
-            appointmentReasons: [...appointmentDetails.appointmentReasons, selectedReason]
-        });
-    };
-
-    const removeAppointmentReason = (reasonValue) => {
-        updateAppointmentDetails({
-            appointmentReasons: appointmentDetails.appointmentReasons.filter(reason => reason.value !== reasonValue)
-        });
-    };
 
     const reInitialiseComponent = () => {
         setAppointmentTouched("ready");
@@ -309,15 +260,10 @@ const AddAppointment = props => {
             appointmentKind: requestAppointmentType(),
             comments: appointmentDetails.notes,
             priority: appointmentDetails.priority || null,
-            status: appointmentDetails.status || null,
-            reasonConceptUuids: appointmentDetails.appointmentReasons.length > 0 
-                ? appointmentDetails.appointmentReasons.map(reason => reason.value) 
-                : undefined
+            status: appointmentDetails.status || null
         };
         if (!appointment.serviceTypeUuid || appointment.serviceTypeUuid.length < 1)
             delete appointment.serviceTypeUuid;
-        if (!appointment.reasonConceptUuids || appointment.reasonConceptUuids.length === 0)
-            delete appointment.reasonConceptUuids;
         return appointment;
     };
 
@@ -639,18 +585,6 @@ const AddAppointment = props => {
                 {isRecurringAppointment() ?
                     //Recurring Appointments
                     <div>
-                            {isAppointmentReasonEnabled(appConfig) && (
-                                <div data-testid="appointment-reason-search-recurring">
-                                    <AppointmentReasonSearch
-                                        selectedReasons={appointmentDetails.appointmentReasons}
-                                        onChange={addAppointmentReason}
-                                        onReasonRemove={removeAppointmentReason}
-                                        isDisabled={false}
-                                        isRequired={false}
-                                        appConfig={appConfig}
-                                    />
-                                </div>
-                            )}
                         <div data-testid="recurring-start-date-selector">
                             <DatePickerCarbon
                                 value={appointmentDetails.appointmentDate}
@@ -842,18 +776,6 @@ const AddAppointment = props => {
                                 </RadioButtonGroup>
                                 <ErrorMessage message={errors.statusError ? errorTranslations.statusErrorMessage : undefined}/>
                             </div>}
-                        {isAppointmentReasonEnabled(appConfig) && (
-                            <div data-testid="appointment-reason-search">
-                                <AppointmentReasonSearch
-                                    selectedReasons={appointmentDetails.appointmentReasons}
-                                    onChange={addAppointmentReason}
-                                    onReasonRemove={removeAppointmentReason}
-                                    isDisabled={false}
-                                    isRequired={false}
-                                    appConfig={appConfig}
-                                />
-                            </div>
-                        )}
                         <div data-testid="date-selector">
                             <DatePickerCarbon
                                 value={appointmentDetails.appointmentDate}

@@ -28,16 +28,6 @@ const LocationSearch = (props) => {
     const [selectedLocations, setSelectedLocations] = useState([]);
 
     useEffect(() => {
-        if (locations.length > 0 && value && onChange) {
-            const isValidLocation = locations.find(loc => loc.value.uuid === value.value.uuid);
-
-            if (!isValidLocation) {
-                onChange(null);
-            }
-        }
-    }, [locations, value]);
-
-    useEffect(() => {
           setLocations(loadLocations());
     }, []);
 

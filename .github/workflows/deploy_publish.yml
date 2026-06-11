@@ -19,7 +19,7 @@ on:
 jobs:
   build-publish-docker-helm:
     name: Build & Publish Docker Image & Helm Chart
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       HELM_CHART_PATH: package/helm/
     steps:
@@ -29,11 +29,13 @@ jobs:
           wget -q https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/setArtifactVersion.sh && chmod +x setArtifactVersion.sh
           ./setArtifactVersion.sh
           rm setArtifactVersion.sh
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
         with:
-          node-version: '12.22.12'
-      - name: Install dependencies
+          node-version: 14.x
+      - name: Install dependencies ui
+        run:  cd ui && npm install
+      - name: Install dependencies root
         run: npm install
       - name: run test
         run: npm run test
@@ -55,7 +57,15 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: package/docker/Dockerfile
           push: true
-          tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments-1-1-1:latest
+          tags: bahmni/appointments:${{env.ARTIFACT_VERSION}},bahmni/appointments:latest
+      - name: Push Translations to Transifex
+        run: |
+          curl -o transifex.sh https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/transifex.sh
+          chmod +x transifex.sh
+          ./transifex.sh push
+          rm transifex.sh
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
       - name: Helm - Update Version and Image Tag
         run: |
           yq --inplace '.image.tag = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/values.yaml
