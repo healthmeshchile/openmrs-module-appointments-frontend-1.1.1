@@ -57,7 +57,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: package/docker/Dockerfile
           push: true
-          tags: bahmni/appointments:${{env.ARTIFACT_VERSION}},bahmni/appointments:latest
+          tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments-1-1-1:latest
       - name: Push Translations to Transifex
         run: |
           curl -o transifex.sh https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/transifex.sh
