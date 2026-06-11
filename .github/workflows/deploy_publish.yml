@@ -1,4 +1,5 @@
 name: Build and Publish
+
 on:
   push:
     branches:
@@ -8,57 +9,98 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
+
   workflow_run:
     workflows: [Pull Translations from Transifex]
     types: [completed]
     branches:
       - master
       - 'release-*'
+
   workflow_dispatch:
 
 jobs:
   build-publish-docker-helm:
     name: Build & Publish Docker Image & Helm Chart
     runs-on: ubuntu-22.04
+
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: read
+
     env:
       HELM_CHART_PATH: package/helm/
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout source
+        uses: actions/checkout@v4
+
       - name: Set env.ARTIFACT_VERSION
+        shell: bash
         run: |
-          wget -q https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/setArtifactVersion.sh && chmod +x setArtifactVersion.sh
-          ./setArtifactVersion.sh
-          rm setArtifactVersion.sh
+          set -euo pipefail
+
+          APP_VERSION_FILE="package/.appversion"
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "Current action is for tag..."
+            VERSION="${GITHUB_REF_NAME}"
+
+          elif [[ "${GITHUB_REF}" == refs/heads/release-* ]]; then
+            echo "Current action is for release branch..."
+            BASE_VERSION="$(echo "${GITHUB_REF_NAME}" | cut -d '-' -f 2)"
+            VERSION="${BASE_VERSION}-rc"
+
+          else
+            echo "Current action is neither tag nor release branch..."
+            BASE_VERSION="$(cat "${APP_VERSION_FILE}")"
+            VERSION="${BASE_VERSION}-${GITHUB_RUN_NUMBER}"
+          fi
+
+          echo "Setting ARTIFACT_VERSION=${VERSION}"
+          echo "ARTIFACT_VERSION=${VERSION}" >> "$GITHUB_ENV"
+
       - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 12.x
+
       - name: Install dependencies ui
-        run:  cd ui && npm install
+        run: cd ui && npm install
+
       - name: Install dependencies root
         run: npm install
-      - name: run test
+
+      - name: Run tests
         run: npm run test
+
       - name: Build
         run: npm run build
+
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
       - name: Docker Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           file: package/docker/Dockerfile
           push: true
-          tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments-1-1-1:latest
-      
+          tags: |
+            healthmesh/appointments-1-1-1:${{ env.ARTIFACT_VERSION }}
+            healthmesh/appointments-1-1-1:latest
+
       - name: Helm - Update Version and Image Tag
         run: |
           yq --inplace '.image.tag = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/values.yaml
@@ -70,26 +112,30 @@ jobs:
       - name: Helm Package
         run: helm package $HELM_CHART_PATH
 
+      # Activar esta sección solo si existe el repo healthmeshchile/helm-charts con rama gh-pages.
+      # Si no existe, comentar desde aquí hasta el final.
       - name: Helm - Checkout Charts Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          repository: Bahmni/helm-charts
+          repository: healthmeshchile/helm-charts
           ref: gh-pages
           path: helm-charts
-          persist-credentials: false
+          token: ${{ secrets.HEALTHMESH_PAT }}
 
       - name: Helm - Copy chart
-        run: mkdir -p helm-charts/appointments/ && cp appointments-${{ env.ARTIFACT_VERSION }}.tgz helm-charts/appointments/
+        run: |
+          mkdir -p helm-charts/appointments/
+          cp appointments-${{ env.ARTIFACT_VERSION }}.tgz helm-charts/appointments/
 
       - name: Helm - reIndex
         working-directory: helm-charts/
-        run: helm repo index --merge index.yaml --url https://bahmni.github.io/helm-charts/  .
+        run: helm repo index --merge index.yaml --url https://healthmeshchile.github.io/helm-charts/ .
 
       - name: Helm - Publish Chart
         working-directory: helm-charts/
         run: |
-          git config user.name ${{ secrets.BAHMNI_USERNAME}}
-          git config user.email ${{ secrets.BAHMNI_EMAIL}}
+          git config user.name "${{ secrets.HEALTHMESH_USERNAME }}"
+          git config user.email "${{ secrets.HEALTHMESH_EMAIL }}"
           git add .
-          git commit -m "Release of bahmni-web-${{ env.ARTIFACT_VERSION }}"
-          git push 'https://${{ secrets.BAHMNI_USERNAME}}:${{ secrets.BAHMNI_PAT}}@github.com/bahmni/helm-charts.git' gh-pages
+          git commit -m "Release of appointments-${{ env.ARTIFACT_VERSION }}" || echo "No changes to commit"
+          git push origin gh-pages
