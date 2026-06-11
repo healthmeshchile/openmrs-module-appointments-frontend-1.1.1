@@ -56,14 +56,6 @@ jobs:
           file: package/docker/Dockerfile
           push: true
           tags: healthmesh/appointments-1-1-1:${{env.ARTIFACT_VERSION}},healthmesh/appointments:latest1-1-1
-      - name: Push Translations to Transifex
-        run: |
-          curl -o transifex.sh https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/transifex.sh
-          chmod +x transifex.sh
-          ./transifex.sh push
-          rm transifex.sh
-        env:
-          TX_TOKEN: ${{ secrets.TX_TOKEN }}
       - name: Helm - Update Version and Image Tag
         run: |
           yq --inplace '.image.tag = "${{ env.ARTIFACT_VERSION }}"' $HELM_CHART_PATH/values.yaml
