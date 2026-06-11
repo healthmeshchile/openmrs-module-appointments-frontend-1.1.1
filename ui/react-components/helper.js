@@ -67,3 +67,16 @@ export const isAppointmentPriorityOptionEnabled = appConfig => {
 export const isAppointmentStatusOptionEnabled = appConfig => {
     return appConfig && appConfig.enableAppointmentStatusOption;
 };
+
+export const getAppointmentReasonConceptSet = (appConfig) => {
+    if (!appConfig) {
+        return null;
+    }
+
+    return appConfig.appointmentReasonConceptSet ||
+        appConfig.appointmentReasonConceptSetName ||
+        (appConfig.appointmentReason && appConfig.appointmentReason.conceptSet) ||
+        (appConfig.appointmentReason && appConfig.appointmentReason.conceptSetName) ||
+        (appConfig.appointmentReason && appConfig.appointmentReason.conceptSetUuid) ||
+        null;
+};
