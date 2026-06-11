@@ -16,6 +16,7 @@ describe('ServiceAttributes', function () {
         compile = $compile;
         scope = $rootScope.$new();
         httpBackend = $httpBackend;
+
         httpBackend.expectGET('./i18n/appointments/locale_en.json').respond({});
         httpBackend.expectGET('/bahmni_config/openmrs/i18n/appointments/locale_en.json').respond({});
 
@@ -70,12 +71,14 @@ describe('ServiceAttributes', function () {
     });
 
     it("should update existing attribute value", function () {
-        scope.service.attributes = [{
-            uuid: 'attr-uuid-1',
-            attributeTypeUuid: 'attr-type-1',
-            value: '#FF5733',
-            voided: false
-        }];
+        scope.service.attributes = [
+            {
+                uuid: 'attr-uuid-1',
+                attributeTypeUuid: 'attr-type-1',
+                value: '#FF5733',
+                voided: false
+            }
+        ];
 
         scope.addOrUpdateAttribute('attr-type-1', 'Color Code', '#00FF00');
 
@@ -85,34 +88,39 @@ describe('ServiceAttributes', function () {
     });
 
     it("should remove attribute when value is cleared", function () {
-        scope.service.attributes = [{
-            uuid: 'attr-uuid-1',
-            attributeTypeUuid: 'attr-type-1',
-            value: '#FF5733',
-            voided: false
-        }];
+        scope.service.attributes = [
+            {
+                uuid: 'attr-uuid-1',
+                attributeTypeUuid: 'attr-type-1',
+                value: '#FF5733',
+                voided: false
+            }
+        ];
 
         scope.removeAttribute('attr-type-1');
 
-        var nonVoidedAttrs = scope.service.attributes.filter(function(attr) {
+        var nonVoidedAttrs = scope.service.attributes.filter(function (attr) {
             return !attr.voided;
         });
+
         expect(nonVoidedAttrs.length).toBe(0);
         expect(scope.service.attributes.length).toBe(1);
         expect(scope.service.attributes[0].voided).toBe(true);
     });
 
     it("should void existing saved attribute when removed", function () {
-        scope.service.attributes = [{
-            uuid: 'attr-uuid-1',
-            attributeTypeUuid: 'attr-type-1',
-            value: '#FF5733',
-            voided: false
-        }];
+        scope.service.attributes = [
+            {
+                uuid: 'attr-uuid-1',
+                attributeTypeUuid: 'attr-type-1',
+                value: '#FF5733',
+                voided: false
+            }
+        ];
 
         scope.removeAttribute('attr-type-1');
 
-        var voidedAttr = scope.service.attributes.find(function(attr) {
+        var voidedAttr = scope.service.attributes.find(function (attr) {
             return attr.uuid === 'attr-uuid-1';
         });
 
@@ -121,11 +129,13 @@ describe('ServiceAttributes', function () {
     });
 
     it("should get attribute value by type uuid", function () {
-        scope.service.attributes = [{
-            attributeTypeUuid: 'attr-type-1',
-            value: '#FF5733',
-            voided: false
-        }];
+        scope.service.attributes = [
+            {
+                attributeTypeUuid: 'attr-type-1',
+                value: '#FF5733',
+                voided: false
+            }
+        ];
 
         scope.attributeValues = {};
         scope.service.attributes.forEach(function (attr) {
